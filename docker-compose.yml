@@ -1,0 +1,37 @@
+version: '3'
+
+services: 
+  node1:
+    build: "./docker"
+    command: /bin/bash
+    ports:
+        - "7000:7000"
+    tty: true
+
+  node2:
+    build: "./docker"
+    command: /bin/bash
+    ports:
+        - "2000:2000"
+    tty: true
+
+  node3:
+    build: "./docker"
+    command: /bin/bash
+    ports:
+        - "3000:3000"
+    tty: true
+
+  node4:
+    build: "./docker"
+    command: /bin/bash
+    ports:
+        - "4000:4000"
+    tty: true
+
+  node5:
+    build: "./docker"
+    command: /bin/bash
+    ports:
+        - "6000:6000"
+    tty: true
