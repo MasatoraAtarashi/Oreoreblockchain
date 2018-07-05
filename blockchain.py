@@ -13,19 +13,21 @@ class Blockchain(object):
 
 		self.chain = []
 
-		self.new_block(previous_hash=1, proof=100)
+		self.new_block(previous_hash=1, nonce=100, hash_value="0000")
 
 		self.nodes = set()
 		self.nodes_address = set()
 		# self.nodes_name = set()
 
-	def new_block(self, proof, previous_hash=None):
+	def new_block(self, hash_value, nonce, previous_hash):
 		block = {
 			'index': len(self.chain) + 1,
 			'timestamp': time(),
 			'transactions': self.current_transactions,
-			'proof': proof,
-			'previous_hash': previous_hash or self.hash(self.chain[-1]),
+			'nonce': nonce,
+			'hash': hash_value,
+			# 'previous_hash': previous_hash or self.hash(self.chain[-1]),
+			'previous_hash': previous_hash,
 		}
 
 		self.current_transactions = []
@@ -55,19 +57,41 @@ class Blockchain(object):
 		return hashlib.sha256(block_string).hexdigest()
 
 	
-	def proof_of_work(self, last_proof):
-		proof = 0
-		while self.valid_proof(last_proof, proof) is False:
-			proof += 1
+	def proof_of_work(self, previous_hash, hashtree):
+		nonce = 0
+		while self.valid_proof(previous_hash, hashtree, nonce) is False:
+			nonce += 1
 
-		return proof
+		return nonce
 	
 	@staticmethod
-	def valid_proof(last_proof, proof):
-		guess = f'{last_proof}{proof}'.encode()
+	def valid_proof(previous_hash, hashtree, nonce):
+		guess = f'{previous_hash}{hashtree}{nonce}'.encode()
 		guess_hash = hashlib.sha256(guess).hexdigest()
 
 		return guess_hash[:4] == "0000"
+
+	def get_hashtree(self):
+		n = 0
+		length = len(self.chain)
+		hashes = []
+		for n in range(length - 1):
+			guess = f'{self.chain[n]}{self.chain[n + 1]}'.encode()
+			guess_hash = hashlib.sha256(guess).hexdigest()
+			# print(guess_hash)
+			hashes.append(guess_hash)
+
+		m = 0
+		length = len(hashes)
+		guess = ""
+		for n in range(length - 1):
+			guess += hashes[m]
+
+		guess = guess.encode()
+		hashtree = hashlib.sha256(guess).hexdigest()
+		# print(hashtree)
+		return hashtree
+
 
 	def register_node(self,node):
 		# parsed_url = urlparse(address)
@@ -172,8 +196,14 @@ while True:
 @app.route('/mine', methods=['GET'])
 def mine():
 	last_block = blockchain.last_block
-	last_proof = last_block['proof']
-	proof = blockchain.proof_of_work(last_proof)
+	previous_hash = last_block['hash']
+
+	hashtree = blockchain.get_hashtree()
+
+	nonce = blockchain.proof_of_work(previous_hash, hashtree)
+
+	guess = f'{previous_hash}{hashtree}{nonce}'.encode()
+	hash_value = hashlib.sha256(guess).hexdigest()
 
 	blockchain.new_transaction(
 		sender="0",
@@ -183,14 +213,16 @@ def mine():
 
 	node.receive_MTC(1)
 
-	block = blockchain.new_block(proof)
+	block = blockchain.new_block(hash_value, nonce, previous_hash)
 
 	responce = {
 		'message': '新しいブロックを採掘しました',
 		'index': block['index'],
 		'transactions': block['transactions'],
-		'proof': block['proof'],
+		'nonce': block['nonce'],
+		'hash': block['hash'],
 		'previous_hash': block['previous_hash'],
+		'hashtree': hashtree,
 	}
 
 	return jsonify(responce), 200
@@ -307,4 +339,4 @@ def send():
 	return jsonify(response), 201
 
 if __name__ == '__main__':
-	app.run(host='127.17.0.1', port=5000)
+	app.run(host='0.0.0.0', port=5000)
