@@ -84,10 +84,26 @@ class Blockchain(object):
 		m = 0
 		length = len(hashes)
 		guess = ""
-		for n in range(length - 1):
-			guess += hashes[m]
 
-		guess = guess.encode()
+		for n in range(length - 1):
+			length = len(hashes)
+			guess = ""
+			new_hashes = []
+			for m in range(length - 1): 
+				guess = f'{hashes[m]}{hashes[m + 1]}'.encode()
+				guess_hash = hashlib.sha256(guess).hexdigest()
+				# print(guess_hash)
+				new_hashes.append(guess_hash)
+
+			hashes = new_hashes
+
+		if not hashes:
+			guess = ""
+			guess = guess.encode()
+		else:
+			guess = hashes[-1].encode()
+			
+
 		hashtree = hashlib.sha256(guess).hexdigest()
 		# print(hashtree)
 		return hashtree
@@ -188,10 +204,10 @@ blockchain = Blockchain()
 
 node = Node()
 
-interval = 1
-while True:
-	node.mining()
-	sleep(interval)
+# interval = 1
+# while True:
+# 	node.mining()
+# 	sleep(interval)
 
 @app.route('/mine', methods=['GET'])
 def mine():
