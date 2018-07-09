@@ -2,7 +2,7 @@ version: '2'
 
 services: 
   node1:
-    build: "./Oreoreblockchain/"
+    build: .
     command: /bin/bash
     tty: true
     networks:
@@ -10,7 +10,7 @@ services:
             ipv4_address: 172.16.238.2
 
   node2:
-    build: "./"
+    build: .
     command: /bin/bash
     tty: true
     networks:
@@ -18,7 +18,7 @@ services:
             ipv4_address: 172.16.238.21
 
   node3:
-    build: "./"
+    build: .
     command: /bin/bash
     tty: true
     networks:
@@ -26,7 +26,7 @@ services:
             ipv4_address: 172.16.238.22
 
   node4:
-    build: "./"
+    build: .
     command: /bin/bash
     tty: true
     networks:
@@ -34,7 +34,7 @@ services:
             ipv4_address: 172.16.238.23
 
   node5:
-    build: "./"
+    build: .
     command: /bin/bash
     tty: true
     networks:
